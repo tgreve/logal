@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 """ Builds the local_galaxies database.
+    17.11.2017, tgreve@ucl.ac.uk
 """
 
 from importlib import reload

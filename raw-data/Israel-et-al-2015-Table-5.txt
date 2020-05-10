@@ -1,0 +1,37 @@
+Published ground-based [C I] and CO line fluxes.
+
+Notes. In this table only, all fluxes refer to the same beamwidth of 22”,
+except in the cases of NGC 4945 and the Circinus galaxy where beamwidths of 38”
+apply, similar to the SPIRE aperture.
+
+(b) Reference to line fluxes: Ba06 = Bayet et al. (2006); GP00 = Gerin &
+Phillips (2000); H08 = Hitschfeld et al. (2008); IWB = Israel et al. (1995);
+ITB = Israel et al. (2006); IB01 = Israel & Baas (2001); IB02 = Israel & Baas
+(2002); IB03 = Israel & Baas (2003); I09a = Israel (2009a); I09b = Israel
+(2009b); Z14 = Zhang et al. (2014).
+
+Name				Observed line fluxa						   Ref.b
+		     CO (4−3)	   CO (7−6)  [C I] (1−0)   [C I] (2−1)	   CO (2−1)  13CO (2−1)	
+	                              (10-17 W m-2)	                     (10-19 W m-2)	
+
+-----------------------------------------------------------------------------------------------------------------------
+IC10		  &  0.89	&  1.00	  &  0.52	&  0.84	        &  25	&    1.4	&  GP00, Ba06
+NGC 253		  &  101	&  −	  &  31.5	&  −	        &  1210	&    104	&  IWB, IB02
+NGC 278		  &  0.89	&  −	  &  0.54	&  −	        &  17.9	&    1.9	&  IB02, I09b
+NGC 660		  &  8.39	&  −	  &  3.37	&  −	        &  154	&    11		&  IB02, I09b
+NGC 891		  &  −		&  −	  &  0.79	&  −	        &  118	&    12		&  Ba06, I
+Maffei 2	  &  40.6	&  −	  &  2.17	&  −	        &  275	&    22		&  IB02, IB03
+NGC 1068	  &  10.8	&  −	  &  5.33	&  −	        &  247	&    17		&  IB02, I09a
+IC 342		  &  20.6	&  −	  &  2.94	&  −	        &  193	&    24		&  IB02, IB03
+Henize2-10	  &  1.40	&  4.00	  &  0.36	&  −	        &  20	&    1.2	&  GP00, Ba06
+NGC 3079	  &  11.4	&  −	  &  7.61	&  −	        &  189	&    11		&  IB02, I09b, GP00
+NGC 3628	  &  10.9	&  −	  &  4.13	&  −	        &  169	&    13		&  IB02, I09b
+NGC 4038	  &  2.6	&  0.6	  &  0.94	&  −	        &  110	&    14		&  GP00, Ba06
+NGC 4736/M94	  &  −		&  −	  &  0.57	&  −	        &  69	&    5.9	&  GP00, Ba06
+NGC 4826/M64	  &  8.49	&  −	  &  5.11	&  −	        &  126	&    15		&  IB02, I09a
+NGC 4945	  &  56.8	&  −	  &  80.4	&  −	        &  1300	&    131	&  H08
+NGC 5194/M51	  &  2.76	&  −	  &  1.41	&  −	        &  43.5	&    5.7	&  IB02, ITB, GP00
+NGC 5236/M83	  &  26.7	&  −	  &  5.98	&  −	        &  291	&    28		&  IB01, IB02
+Circinus	  &  18.0	&  26.1	  &  8.20	&  −	        &  592	&    56		&  H08, Z14
+NGC 6090/Mrk496	  &  −		&  −	  &  0.38	&  −	        &  43	&    −		&  GP00, Ba06
+NGC 6946	  &  21.3	&  −	  &  4.78	&  −	        &  249	&    22		&  IB01, IB02, GP00

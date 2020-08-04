@@ -11,6 +11,23 @@ All luminosities are converted to the same cosmology:
 (Ho, Omega_L, Omega_m) = (70, 0.72, 0.28)
 
 
+
+
+Correct K16: L_40_120 ---> L_8_1000
+
+Extract sources that are common to both K16 and L17
+
+subset of sources where you have L_40_120.K16 and L_8_1000.L17
+
+Plot L_8_1000.L17/L_40_120.K16 vs. L_40_120.K16
+Mean o median of C = (L_8_1000.L17/L_40_120.K16) of if there is a trend with
+
+Then take all of your K16 L_40_120.K16 x C ---> L_8_1000.K16
+
+
+
+
+
 Samples:
 --------
 	The raw data files were downloaded from the online data servers given below
@@ -95,6 +112,10 @@ Run Mongod database:
                 >lsof -i | grep 27017
                 >db.eval("db.shutdownServer()")
 
+                If previous instance of Mongo db is hanging:
+                >sudo lsof -iTCP -sTCP:LISTEN -n -P
+                >sudo kill ...
+
 
 Todo:
     29.03.2020: Need to incorporate Jiao+17 data.
@@ -126,7 +147,8 @@ import trgpy.emg
 reload(trgpy.emg)
 from trgpy.emg import line_flux_conversion
 from trgpy.dictionary_transitions import freq
-from trgpy.config import cosmo_params
+from trgpy.config import cosmo_params_standard_1
+cosmo_params = cosmo_params_standard_1
 # ---------------
 
 
@@ -1998,7 +2020,7 @@ def commit_to_db_I15():
                 db.local_galaxies.update_one(
                     {
                         'ID': {
-                            "$eq": ID_ALT
+                              "$eq": ID_ALT
                             }
                         },
                     {'$set': {'LIR_8_1000.MASTER': df['LIR_8_1000'][i]}
@@ -2505,7 +2527,7 @@ def commit_to_db_K16():
                             "$eq": ID
                             }
                         },
-                    {'$set': {'LIR_8_1000.K16': LIR}
+                    {'$set': {'LIR_40_120.K16': LIR}
                     }
                 )
                 # Commit LIR_8_1000_K16 to LIR_8_1000.MASTER

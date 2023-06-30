@@ -108,7 +108,7 @@ Comments on extended sources and multiple pointings:
 
 
 Run Mongod database:
-		>mongod --dbpath=/Users/tgreve/Dropbox/Work/local/python/logal/db
+		>mongod --dbpath=/Users/tgreve/Dropbox/NEW-SETUP/C.Code/local/python/logal/db
                 >lsof -i | grep 27017
                 >db.eval("db.shutdownServer()")
 
@@ -233,10 +233,10 @@ def build():
     make_pickle_I15()
     make_pickle_K16()
     make_pickle_L17()
-    #make_pickle_J17()
+    make_pickle_J17()
 
     # Make master list
-    make_master_list(verbose=False)
+    make_master_list(verbose=True)
 
     # Commit to db
     commit_to_db_master()
@@ -246,6 +246,7 @@ def build():
     commit_to_db_R15()
     commit_to_db_K16()
     commit_to_db_L17()
+    commit_to_db_J17()
 
 
 def db_initialize(drop=False):
@@ -309,6 +310,10 @@ def map_id_raw_to_id(table, catalogue=False, drop=True):
     if 'ID_ALT_RAW' in table.columns:
         table['ID_ALT'] = table.apply(lambda row: row['ID_ALT_RAW'], axis=1)
     if catalogue == 'I15':
+        # Create new ID_ALT_RAW and ID_ALT column in dataframe
+        table['ID_ALT_RAW'] = table.apply(lambda row: row['ID_RAW'], axis=1)
+        table['ID_ALT'] = table.apply(lambda row: row['ID_ALT_RAW'], axis=1)
+    if catalogue == 'J17':
         # Create new ID_ALT_RAW and ID_ALT column in dataframe
         table['ID_ALT_RAW'] = table.apply(lambda row: row['ID_RAW'], axis=1)
         table['ID_ALT'] = table.apply(lambda row: row['ID_ALT_RAW'], axis=1)
@@ -1481,7 +1486,24 @@ def make_pickle_J17():
                          names=['ID_RAW','ICO10','eICO10','z'],
                          usecols=[0,1,2,3], skiprows=2)
 
-    print(table1["ID_RAW"])
+    # Clean labels
+    for i in np.arange(0,len(table1)):
+        foo = table1["ID_RAW"][i]
+        foo = foo[0:foo.find("\t")]
+        foo = foo.strip()
+        table1["ID_RAW"][i] = foo
+
+    # Map (ID_RAW, ID_ALT_RAW) to (ID)
+    table1 = map_id_raw_to_id(table1, catalogue="J17")
+
+    # Remove extended sources
+    table1 = remove_extended_sources(table1)
+
+    # --- Pickle data ---
+    df = pd.DataFrame({'ID_RAW': table1.ID_RAW, 'ID': table1.ID, 'ID_ALT': table1.ID_ALT,
+        'ID_ALT_RAW': table1.ID_ALT_RAW, 'z':table1.z, 'SdV_CO10': table1.ICO10, 'eSdV_CO10': table1.eICO10})
+    df.to_pickle(data_path+'Jiao-et-al-2017.pkl')
+    # -------------------
 
 
 
@@ -1496,64 +1518,72 @@ def make_master_list(verbose=True):
     # --- Read in Armus-et-al-2009-table-1.pkl ---
     table_A09 = pd.read_pickle(data_path+'Armus-et-al-2009.pkl')
 
-    id_A09 = table_A09.ID
-    id_alt_A09 = table_A09.ID_ALT
-    z_A09 = table_A09.z
-    print("Armus+09 sample size:"), len(table_A09.ID_ALT)
+    id_A09 = table_A09.ID.values
+    id_alt_A09 = table_A09.ID_ALT.values
+    z_A09 = table_A09.z.values
+    print("Armus+09 sample size:", len(table_A09.ID_ALT))
     print("")
     # --------------------------------------------
 
     # --- Read in Greve-et-al-2014-table-1.pkl ---
     table_G14 = pd.read_pickle(data_path+'Greve-et-al-2014.pkl')
 
-    id_G14 = table_G14.ID
-    z_G14 = table_G14.z
-    print("Greve+14 sample size:"), len(table_G14.ID)
+    id_G14 = table_G14.ID.values
+    z_G14 = table_G14.z.values
+    print("Greve+14 sample size:", len(table_G14.ID))
     print("")
     # --------------------------------------------
 
     # --- Read in Rosenberg-et-al-2015.pkl ---
     table_R15 = pd.read_pickle(data_path+'Rosenberg-et-al-2015.pkl')
 
-    id_R15 = table_R15.ID
-    z_R15 = table_R15.z
-    print("Rosenberg+15 sample size:"), len(table_R15.ID)
+    id_R15 = table_R15.ID.values
+    z_R15 = table_R15.z.values
+    print("Rosenberg+15 sample size:", len(table_R15.ID))
     print("")
     # --------------------------------------------
 
     # --- Read in Israel-et-al-2015.pkl ---
     table_I15 = pd.read_pickle(data_path+'Israel-et-al-2015-Table-1.pkl')
 
-    id_I15 = table_I15.ID
-    id_alt_I15 = table_I15.ID_ALT
-    z_I15 = table_I15.z
-    print("Israel+15 sample size:"), len(table_I15.ID)
+    id_I15 = table_I15.ID.values
+    id_alt_I15 = table_I15.ID_ALT.values
+    z_I15 = table_I15.z.values
+    print("Israel+15 sample size:", len(table_I15.ID))
     print("")
     # --------------------------------------------
 
     # --- Read in Kamenetzky-et-al-2016.pkl ---
     table_K16 = pd.read_pickle(data_path+'Kamenetzky-et-al-2016-Table-1.pkl')
 
-    id_K16 = table_K16.ID
-    z_K16 = table_K16.z
-    print("Kamenetzky+16 sample size:"), len(table_K16.ID)
+    id_K16 = table_K16.ID.values
+    z_K16 = table_K16.z.values
+    print("Kamenetzky+16 sample size:", len(table_K16.ID))
     print("")
     # --------------------------------------------
 
     # --- Read in Lu-et-al-2017.pkl ---
     table_L17 = pd.read_pickle(data_path+'Lu-et-al-2017.pkl')
 
-    id_L17 = table_L17.ID
-    z_L17 = table_L17.z
-    print("Lu+17 sample size:"), len(table_L17.ID)
+    id_L17 = table_L17.ID.values
+    z_L17 = table_L17.z.values
+    print("Lu+17 sample size:", len(table_L17.ID))
     print("")
     # --------------------------------------------
 
+    # --- Read in Jiao-et-al-2017.pkl ---
+    table_J17 = pd.read_pickle(data_path+'Jiao-et-al-2017.pkl')
+
+    id_J17 = table_J17.ID.values
+    z_J17 = table_J17.z.values
+    print("Jiao+17 sample size:", len(table_J17.ID))
+    print("")
+    # --------------------------------------------
 
     # --- Output sources and sources overlaps ---
     i = 0
     if verbose:
-        print("{0:4s} {1:25s} {2:25s} {3:25s} {4:25s} {5:25s} {6:25s} {7:25s}\n".format('No', 'K16', 'L17', 'R15', 'G14', 'A09', 'I15', 'z'))
+        print("{0:4s} {1:25s} {2:25s} {3:25s} {4:25s} {5:25s} {6:25s} {7:25s} {8:25s}\n".format('No', 'K16', 'L17', 'R15', 'G14', 'A09', 'I15', 'J17', 'z'))
 
     # --- Loop through K16
     i_z = 0
@@ -1619,6 +1649,14 @@ def make_master_list(verbose=True):
             id_I15 = np.array(id_I15)
             id_I15[indices_alt] = name_K16
             id_I15 = list(id_I15)
+        else:
+            foo = ''
+        output_str = "{0:25s} {1:25s}".format(output_str, foo)
+
+        # Is name_K16 in J17?
+        indices = [i for i,x in enumerate(id_J17) if x == name_K16]
+        if len(indices) > 0:
+            foo = np.array(id_J17)[indices][0]
         else:
             foo = ''
         output_str = "{0:25s} {1:25s}".format(output_str, foo)
@@ -1700,6 +1738,14 @@ def make_master_list(verbose=True):
                 foo = ''
             output_str = "{0:25s} {1:25s}".format(output_str, foo)
 
+            # Is name_L17 in J17?
+            indices = [i for i,x in enumerate(id_J17) if x == name_L17]
+            if len(indices) > 0:
+                foo = np.array(id_J17)[indices][0]
+            else:
+                foo = ''
+            output_str = "{0:25s} {1:25s}".format(output_str, foo)
+
             # Add one to source_counter
             source_counter = source_counter + 1
             # Add name_L17 to ID_master if not in K16
@@ -1770,6 +1816,14 @@ def make_master_list(verbose=True):
                 foo = ''
             output_str = "{0:25s} {1:25s}".format(output_str, foo)
 
+            # Is name_R15 in J17?
+            indices = [i for i,x in enumerate(id_J17) if x == name_R15]
+            if len(indices) > 0:
+                foo = np.array(id_J17)[indices][0]
+            else:
+                foo = ''
+            output_str = "{0:25s} {1:25s}".format(output_str, foo)
+
 
             # Add one to source_counter
             source_counter = source_counter + 1
@@ -1833,6 +1887,14 @@ def make_master_list(verbose=True):
                 foo = ''
             output_str = "{0:25s} {1:25s}".format(output_str, foo)
 
+            # Is name_G14 in J17?
+            indices = [i for i,x in enumerate(id_J17) if x == name_G14]
+            if len(indices) > 0:
+                foo = np.array(id_J17)[indices][0]
+            else:
+                foo = ''
+            output_str = "{0:25s} {1:25s}".format(output_str, foo)
+
             # Add one to source_counter
             source_counter = source_counter + 1
             # Add name_R15 to ID_master if not in K16 nor in L17 nor in R15
@@ -1887,6 +1949,14 @@ def make_master_list(verbose=True):
                 foo = ''
             output_str = "{0:25s} {1:25s}".format(output_str, foo)
 
+            # Is name_A09 in J17?
+            indices = [i for i,x in enumerate(id_J17) if x == name_A09]
+            if len(indices) > 0:
+                foo = np.array(id_J17)[indices][0]
+            else:
+                foo = ''
+            output_str = "{0:25s} {1:25s}".format(output_str, foo)
+
             # Add one to source_counter
             source_counter = source_counter + 1
             # Add name_alt_A09 to ID_master if not in K16 nor in L17 nor in R15 nor in G14
@@ -1908,14 +1978,14 @@ def make_master_list(verbose=True):
         name_alt_I15 = table_I15.ID_ALT[j]
         output_str = name_alt_I15
 
-        # Is name_A09 in K16, L17, R15, G14, or A09?
+        # Is name_A09 in K16, L17, R15, G14, A09 or J17?
         indices_1 = [i for i,x in enumerate(id_K16) if x == name_I15]
         indices_2 = [i for i,x in enumerate(id_L17) if x == name_I15]
         indices_3 = [i for i,x in enumerate(id_R15) if x == name_I15]
         indices_4 = [i for i,x in enumerate(id_G14) if x == name_I15]
         indices_5 = [i for i,x in enumerate(id_A09) if x == name_I15]
 
-        # Is name_alt_A09 in K16, L17, R15, G14, or A09?
+        # Is name_alt_A09 in K16, L17, R15, G14, A09 or J17?
         indices_alt_1 = [i for i,x in enumerate(id_K16) if x == name_alt_I15]
         indices_alt_2 = [i for i,x in enumerate(id_L17) if x == name_alt_I15]
         indices_alt_3 = [i for i,x in enumerate(id_R15) if x == name_alt_I15]
@@ -1926,6 +1996,14 @@ def make_master_list(verbose=True):
             foo = ''
             output_str = "{0:4d} {1:25s} {2:25s} {3:25s} {4:25s} {5:25s} {6:25s}".format(source_counter, foo, foo, foo, foo, foo, output_str)
 
+            # Is name_I15 in J17?
+            indices = [i for i,x in enumerate(id_J17) if x == name_I15]
+            if len(indices) > 0:
+                foo = np.array(id_J17)[indices][0]
+            else:
+                foo = ''
+            output_str = "{0:25s} {1:25s}".format(output_str, foo)
+
             # Add one to source_counter
             source_counter = source_counter + 1
             # Add name_alt_I15 to ID_master if not in K16 nor in L17 nor in R15 nor in G14
@@ -1933,6 +2011,48 @@ def make_master_list(verbose=True):
             # Add redshift to z_master
             z_master.append(z_I15[i_z])
             output_str = "{0:25s} {1:2.5f}".format(output_str, z_I15[i_z])
+
+            if verbose:
+                print(output_str)
+
+        i_z = i_z + 1
+
+
+    # --- Loop through J17
+    i_z = 0
+    for j in np.arange(0,len(table_J17.ID_ALT)):
+
+        name_J17 = table_J17.ID[j]
+        name_alt_J17 = table_J17.ID_ALT[j]
+        output_str = name_alt_J17
+
+        # Is name_A09 in K16, L17, R15, G14, A09 or J17?
+        indices_1 = [i for i,x in enumerate(id_K16) if x == name_J17]
+        indices_2 = [i for i,x in enumerate(id_L17) if x == name_J17]
+        indices_3 = [i for i,x in enumerate(id_R15) if x == name_J17]
+        indices_4 = [i for i,x in enumerate(id_G14) if x == name_J17]
+        indices_5 = [i for i,x in enumerate(id_A09) if x == name_J17]
+        indices_6 = [i for i,x in enumerate(id_I15) if x == name_J17]
+
+        # Is name_alt_A09 in K16, L17, R15, G14, A09 or J17?
+        indices_alt_1 = [i for i,x in enumerate(id_K16) if x == name_alt_J17]
+        indices_alt_2 = [i for i,x in enumerate(id_L17) if x == name_alt_J17]
+        indices_alt_3 = [i for i,x in enumerate(id_R15) if x == name_alt_J17]
+        indices_alt_4 = [i for i,x in enumerate(id_G14) if x == name_alt_J17]
+        indices_alt_5 = [i for i,x in enumerate(id_A09) if x == name_alt_J17]
+        indices_alt_6 = [i for i,x in enumerate(id_I15) if x == name_alt_J17]
+
+        if len(indices_1) == 0 and len(indices_2) == 0 and len(indices_3) == 0 and len(indices_4) == 0 and len(indices_5) == 0 and len(indices_6) and len(indices_alt_1) == 0 and len(indices_alt_2) == 0 and len(indices_alt_3) == 0 and len(indices_alt_4) == 0 and len(indices_alt_5) and len(indices_alt_6) == 0:
+            foo = ''
+            output_str = "{0:4d} {1:25s} {2:25s} {3:25s} {4:25s} {5:25s} {6:25s} {7:25s}".format(source_counter, foo, foo, foo, foo, foo, foo, output_str)
+
+            # Add one to source_counter
+            source_counter = source_counter + 1
+            # Add name_alt_I15 to ID_master if not in K16 nor in L17 nor in R15 nor in G14
+            ID_master.append(name_alt_J17)
+            # Add redshift to z_master
+            z_master.append(z_J17[i_z])
+            output_str = "{0:25s} {1:2.5f}".format(output_str, z_J17[i_z])
 
             if verbose:
                 print(output_str)
@@ -1963,6 +2083,208 @@ def commit_to_db_master():
                 'z': df['z'][i],
             }
         )
+    # --------------------
+
+
+
+def commit_to_db_J17():
+    """ Commits J17 data to db.
+    """
+
+    # --- Read in I15 pkl file ---
+    df = pd.read_pickle(data_path+'Jiao-et-al-2017.pkl')
+    print(df.SdV_CO10)
+    # ----------------------------
+
+    ## --- Commit to db ---
+    #for i in np.arange(0,len(df['ID'])):
+    #    if int(df['LIR_8_1000'][i]) != ValUnDef:
+    #        ID = df['ID'][i]
+    #        ID_ALT = df['ID_ALT'][i]
+
+    #        # Check if ID already exists in db
+    #        cursor = db.local_galaxies.find_one({'ID': ID})
+    #        cursor_alt = db.local_galaxies.find_one({'ID': ID_ALT})
+
+    #        # ID in db['ID']
+    #        if not(cursor == None):
+    #            db.local_galaxies.update_one(
+    #                {
+    #                    'ID': {
+    #                        "$eq": ID
+    #                        }
+    #                    },
+    #                {'$set': {'LIR_8_1000.J17': df['LIR_8_1000'][i]}
+    #                }
+    #            )
+    #            # Commit LIR_8_1000_I15 to LIR_8_1000.MASTER
+    #            db.local_galaxies.update_one(
+    #                {
+    #                    'ID': {
+    #                        "$eq": ID
+    #                        }
+    #                    },
+    #                {'$set': {'LIR_8_1000.MASTER': df['LIR_8_1000'][i]}
+    #                }
+    #            )
+    #        # ID not in db['ID'] and ID_ALT in db['ID'] and ID_ALT != ''
+    #        elif cursor == None and not(cursor_alt == None) and ID_ALT != '':
+    #            db.local_galaxies.update_one(
+    #                {
+    #                    'ID': {
+    #                        "$eq": ID_ALT
+    #                        }
+    #                    },
+    #                {'$set': {'LIR_8_1000.J17': df['LIR_8_1000'][i]}
+    #                }
+    #            )
+    #            # Commit LIR_8_1000_I15 to LIR_8_1000.MASTER
+    #            db.local_galaxies.update_one(
+    #                {
+    #                    'ID': {
+    #                          "$eq": ID_ALT
+    #                        }
+    #                    },
+    #                {'$set': {'LIR_8_1000.MASTER': df['LIR_8_1000'][i]}
+    #                }
+    #            )
+    #        # ID not in db['ID'] and ID_ALT not in db['ID']
+    #        else:
+    #            print("Error... source should be in db.")
+    #    # No LIR measurement
+    #    else:
+    #        print("Warning... source has no LIR measurement.")
+    ## --------------------
+
+
+    # --- Commit to db ---
+    # Transitions in J17
+    transitions = ['1-0']
+    transitions = ['12CO(' + s + ')' for s in transitions]
+
+    # Line flux entries in df
+    entries = ['10']
+    entries = ['CO' + s for s in entries]
+    entries_err = ['eSdV_' + s for s in entries]
+    entries = ['SdV_' + s for s in entries]
+
+    # Loop over I15 pickle files
+    for k in ['1']: #, '5']:
+
+        # Read in I15 pkl file
+        df = pd.read_pickle(data_path+'Jiao-et-al-2017.pkl')
+
+        for i in np.arange(0,len(df['ID'])):
+            ID = df['ID'][i]
+            ID_ALT = df['ID_ALT'][i]
+
+            # Loop over line entries for each source
+            j=0
+            for entry in entries:
+                entry_err = entries_err[j]
+                # Fixing errors, upper limits and undefined values
+                SdV = float(df[entry][i])
+                eSdV = float(df[entry_err][i])
+
+                # Check if ID already exists in db
+                cursor = db.local_galaxies.find_one({'ID': ID})
+                cursor_alt = db.local_galaxies.find_one({'ID': ID_ALT})
+
+                # ID in db['ID'] and ID_ALT not in db['ID']
+                if not(cursor == None):
+                    # SdV is detected (always the case for I15)
+                    if SdV > 0:
+                        # Commit to db
+                        #SdV = line_flux_conversion(freq[transitions[j]], SdV, conversion='si2jansky')[0]
+                        db.local_galaxies.update_one(
+                            {
+                                'ID': {
+                                    "$eq": ID
+                                    }
+                                },
+                            {'$set': {transitions[j]+'.SdV_J17': SdV}
+                            }
+                        )
+                        #eSdV = line_flux_conversion(freq[transitions[j]], eSdV, conversion='si2jansky')[0]
+                        db.local_galaxies.update_one(
+                            {
+                                'ID': {
+                                    "$eq": ID
+                                    }
+                                },
+                            {'$set': {transitions[j]+'.eSdV_J17': eSdV}
+                            }
+                        )
+                        # Commit I15 fluxes to master fluxes
+                        db.local_galaxies.update_one(
+                            {
+                                'ID': {
+                                    "$eq": ID
+                                    }
+                                },
+                            {'$set': {transitions[j]+'.SdV': SdV}
+                            }
+                        )
+                        db.local_galaxies.update_one(
+                            {
+                                'ID': {
+                                    "$eq": ID
+                                    }
+                                },
+                            {'$set': {transitions[j]+'.eSdV': eSdV}
+                            }
+                        )
+
+                # ID not in db['ID'] and ID_ALT in db['ID'] and ID_ALT != ''
+                elif cursor == None and not(cursor_alt == None) and ID_ALT != '':
+                    # SdV is detected (always the case for I15)
+                    if SdV > 0:
+                        # Commit to db
+                        #SdV = line_flux_conversion(freq[transitions[j]], SdV, conversion='si2jansky')[0]
+                        db.local_galaxies.update_one(
+                            {
+                                'ID': {
+                                    "$eq": ID_ALT
+                                    }
+                                },
+                            {'$set': {transitions[j]+'.SdV_J17': SdV}
+                            }
+                        )
+                        #eSdV = line_flux_conversion(freq[transitions[j]], eSdV, conversion='si2jansky')[0]
+                        db.local_galaxies.update_one(
+                            {
+                                'ID': {
+                                    "$eq": ID_ALT
+                                    }
+                                },
+                            {'$set': {transitions[j]+'.eSdV_J17': eSdV}
+                            }
+                        )
+                        # Commit I15 fluxes to master fluxes
+                        db.local_galaxies.update_one(
+                            {
+                                'ID': {
+                                    "$eq": ID_ALT
+                                    }
+                                },
+                            {'$set': {transitions[j]+'.SdV': SdV}
+                            }
+                        )
+                        db.local_galaxies.update_one(
+                            {
+                                'ID': {
+                                    "$eq": ID_ALT
+                                    }
+                                },
+                            {'$set': {transitions[j]+'.eSdV': eSdV}
+                            }
+                        )
+
+                # ID_ALT not in db['ID_ALT']
+                else:
+                    print("Error... source should be in db.")
+
+                j=j+1
     # --------------------
 
 
